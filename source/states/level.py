@@ -126,7 +126,7 @@ class Level:
             self.dying_group.update(self)
             self.shell_group.update(self)
             self.coin_group.update()
-            self.powerup_group.update()
+            self.powerup_group.update(self)
 
         self.draw(surface)
 
@@ -169,6 +169,12 @@ class Level:
                     shell.rect.x -= 40
                     shell.direction = 0
                 shell.state = 'slide'
+
+        powerup = pygame.sprite.spritecollideany(self.player, self.powerup_group)
+        if powerup:
+            powerup.kill()
+            # if powerup.name == 'mushroom':
+            #     self.player.state = 'small2big'
 
     def check_y_collision(self):
 
@@ -255,13 +261,13 @@ class Level:
     def draw(self, surface):
         self.game_ground.blit(self.background, self.game_window, self.game_window)
         self.game_ground.blit(self.player.image, self.player.rect)
+        self.powerup_group.draw(self.game_ground)
         self.brick_group.draw(self.game_ground)
         self.box_group.draw(self.game_ground)
         self.enemy_group.draw(self.game_ground)
         self.dying_group.draw(self.game_ground)
         self.shell_group.draw(self.game_ground)
         self.coin_group.draw(self.game_ground)
-        self.powerup_group.draw(self.game_ground)
 
         surface.blit(self.game_ground, (0, 0), self.game_window)
         self.info.draw(surface)
