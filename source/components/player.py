@@ -116,6 +116,8 @@ class Player(pygame.sprite.Sprite):
             self.fall(keys)
         elif self.state == 'die':
             self.die(keys)
+        elif self.state == 'small2big':
+            self.small2big(keys)
 
         if self.face_right:
             self.image = self.right_frames[self.frame_index]
@@ -217,6 +219,39 @@ class Player(pygame.sprite.Sprite):
         self.frame_index = 6
         self.state = 'die'
         self.death_timer = self.current_time
+
+    def small2big(self, keys):
+        frame_dur = 65
+        sizes = [1, 0, 1, 0, 1, 2, 0, 1, 2, 0, 2] # 0 small, 1 medium, 2 big
+        frames_and_idx = [(self.small_normal_frames, 0), (self.small_normal_frames, 7), (self.big_normal_frames, 0)]
+        if self.transition_timer == 0:
+            self.big = True
+            self.transition_timer = self.current_time
+            self.changing_idx = 0
+        elif self.current_time - self.transition_timer > frame_dur:
+            self.transition_timer = self.current_time
+            frames, idx = frames_and_idx[sizes[self.changing_idx]]
+            self.change_player_image(frames, idx)
+            self.changing_idx += 1
+            if self.changing_idx == len(sizes):
+                self.transition_timer = 0
+                self.state = 'walk'
+                self.right_frames = self.right_big_normal_frames
+                self.left_frames = self.left_big_normal_frames
+
+    def change_player_image(self, frames, idx):
+        self.frame_index = idx
+        if self.face_right:
+            self.right_frames = frames[0]
+            self.image = self.right_frames[self.frame_index]
+        else:
+            self.left_frames = frames[1]
+            self.image = self.left_frames[self.frame_index]
+        last_frame_bottom = self.rect.bottom
+        last_frame_centerx = self.rect.centerx
+        self.rect = self.image.get_rect()
+        self.rect.bottom = last_frame_bottom
+        self.rect.centerx = last_frame_centerx
 
     def calc_vel(self, vel, accel, max_vel, is_positive = True):
         if is_positive:

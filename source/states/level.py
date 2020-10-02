@@ -114,6 +114,9 @@ class Level:
             if self.current_tiem - self.player.death_timer > 3000:
                 self.finished = True
                 self.update_game_info()
+        elif self.is_frozen():
+            pass
+
         else:
             self.update_player_position()
             self.check_checkpoints()
@@ -129,6 +132,9 @@ class Level:
             self.powerup_group.update(self)
 
         self.draw(surface)
+
+    def is_frozen(self):
+        return self.player.state in ['small2big', 'big2small', 'big2fire', 'fire2small']
 
     def update_player_position(self):
 
@@ -173,8 +179,8 @@ class Level:
         powerup = pygame.sprite.spritecollideany(self.player, self.powerup_group)
         if powerup:
             powerup.kill()
-            # if powerup.name == 'mushroom':
-            #     self.player.state = 'small2big'
+            if powerup.name == 'mushroom':
+                self.player.state = 'small2big'
 
     def check_y_collision(self):
 
@@ -247,7 +253,7 @@ class Level:
         sprite.rect.y += 1
         check_group = pygame.sprite.Group(self.ground_items_group, self.brick_group, self.box_group)
         collided_sprite = pygame.sprite.spritecollideany(sprite, check_group)
-        if not collided_sprite and sprite.state != 'jump':
+        if not collided_sprite and sprite.state != 'jump' and not self.is_frozen():
             sprite.state = 'fall'
         sprite.rect.y -= 1
 
