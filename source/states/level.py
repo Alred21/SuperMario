@@ -157,9 +157,16 @@ class Level:
         if collided_sprite:
             self.adjust_player_x(collided_sprite)
 
+        if self.player.hurt_immune:
+            return
+
         enemy = pygame.sprite.spritecollideany(self.player, self.enemy_group)
         if enemy:
-            self.player.go_die()
+            if self.player.big:
+                self.player.state = 'big2small'
+                self.player.hurt_immune = True
+            else:
+                self.player.go_die()
 
         shell = pygame.sprite.spritecollideany(self.player, self.shell_group)
         if shell:
@@ -204,6 +211,8 @@ class Level:
         elif box:
             self.adjust_player_y(box)
         elif enemy:
+            if self.player.hurt_immune:
+                return
             self.enemy_group.remove(enemy)
             if enemy.name == 'koopa':
                 self.shell_group.add(enemy)
