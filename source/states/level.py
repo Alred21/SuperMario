@@ -226,7 +226,7 @@ class Level:
                 self.player.state = 'jump'
                 self.player.rect.bottom = enemy.rect.top
                 self.player.y_vel = self.player.jump_vel * 0.8
-            enemy.go_die(how)
+            enemy.go_die(how, 1 if self.player.face_right else -1)
 
         self.check_will_fall(self.player)
 
@@ -250,13 +250,29 @@ class Level:
             self.player.rect.top = sprite.rect.bottom
             self.player.state = 'fall'
 
+            self.is_enemy_on(sprite)
+
             if sprite.name == 'box':
                 if sprite.state == 'rest':
                     sprite.go_bumped()
 
             if sprite.name == 'brick':
-                if sprite.state == 'rest':
+                if self.player.big and sprite.brick_type == 0:  # when mario is big and brick contains nothing
+                    sprite.smashed(self.dying_group)
+                else:
                     sprite.go_bumped()
+
+    def is_enemy_on(self, sprite):
+        sprite.rect.y -= 1
+        enemy = pygame.sprite.spritecollideany(sprite, self.enemy_group)
+        if enemy:
+            self.enemy_group.remove(enemy)
+            self.dying_group.add(enemy)
+            if sprite.rect.centerx > enemy.rect.centerx:
+                enemy.go_die('bumped', -1)
+            else:
+                enemy.go_die('bumped', 1)
+        sprite.rect.y += 1
 
     def check_will_fall(self, sprite):
         sprite.rect.y += 1
